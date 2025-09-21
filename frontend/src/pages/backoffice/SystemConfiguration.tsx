@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuthStore } from '../../store/authStore';
 import { UserRole } from '../../types';
 import { Button } from '../../components/ui/Button';
@@ -11,6 +11,29 @@ interface SystemSettings {
   maintenanceMode: boolean;
   maxFileSize: number;
   allowedFileTypes: string[];
+  // Nouveaux paramètres avancés
+  platformName: string;
+  platformLogo: string;
+  supportEmail: string;
+  maxProgramsPerOrganization: number;
+  autoReviewEnabled: boolean;
+  reviewScoreThreshold: number;
+  sessionTimeoutMinutes: number;
+  rateLimitPerHour: number;
+  backupFrequencyHours: number;
+  analyticsEnabled: boolean;
+  multiLanguageEnabled: boolean;
+  defaultLanguage: string;
+  currencyCode: string;
+  minApplicationAmount: number;
+  maxApplicationAmount: number;
+  requireDocumentVerification: boolean;
+  allowPublicRegistration: boolean;
+  passwordMinLength: number;
+}
+
+interface ValidationErrors {
+  [key: string]: string;
 }
 
 export const SystemConfiguration: React.FC = () => {
@@ -22,9 +45,30 @@ export const SystemConfiguration: React.FC = () => {
     autoArchivePrograms: false,
     maintenanceMode: false,
     maxFileSize: 50,
-    allowedFileTypes: ['pdf', 'doc', 'docx', 'xls', 'xlsx']
+    allowedFileTypes: ['pdf', 'doc', 'docx', 'xls', 'xlsx'],
+    // Nouveaux paramètres avec valeurs par défaut
+    platformName: 'GROWF - Plateforme de Financement',
+    platformLogo: '/logo-growf.png',
+    supportEmail: 'support@growf.fr',
+    maxProgramsPerOrganization: 25,
+    autoReviewEnabled: false,
+    reviewScoreThreshold: 75,
+    sessionTimeoutMinutes: 120,
+    rateLimitPerHour: 1000,
+    backupFrequencyHours: 24,
+    analyticsEnabled: true,
+    multiLanguageEnabled: false,
+    defaultLanguage: 'fr',
+    currencyCode: 'EUR',
+    minApplicationAmount: 1000,
+    maxApplicationAmount: 500000,
+    requireDocumentVerification: true,
+    allowPublicRegistration: true,
+    passwordMinLength: 8
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [errors, setErrors] = useState<ValidationErrors>({});
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
   // Seul le SUPERADMIN peut accéder à cette page
   if (user?.role !== UserRole.SUPERADMIN) {
@@ -40,8 +84,87 @@ export const SystemConfiguration: React.FC = () => {
     );
   }
 
+  // Validation functions
+  const validateSettings = (): ValidationErrors => {
+    const newErrors: ValidationErrors = {};
+
+    if (settings.maxApplicationsPerUser < 1 || settings.maxApplicationsPerUser > 50) {
+      newErrors.maxApplicationsPerUser = 'Doit être entre 1 et 50';
+    }
+
+    if (settings.applicationDeadlineDays < 7 || settings.applicationDeadlineDays > 90) {
+      newErrors.applicationDeadlineDays = 'Doit être entre 7 et 90 jours';
+    }
+
+    if (settings.maxFileSize < 1 || settings.maxFileSize > 100) {
+      newErrors.maxFileSize = 'Doit être entre 1 et 100 MB';
+    }
+
+    if (settings.platformName.trim().length < 3) {
+      newErrors.platformName = 'Minimum 3 caractères';
+    }
+
+    if (!settings.supportEmail.includes('@')) {
+      newErrors.supportEmail = 'Email invalide';
+    }
+
+    if (settings.minApplicationAmount < 0) {
+      newErrors.minApplicationAmount = 'Doit être positif';
+    }
+
+    if (settings.maxApplicationAmount <= settings.minApplicationAmount) {
+      newErrors.maxApplicationAmount = 'Doit être supérieur au montant minimum';
+    }
+
+    if (settings.maxProgramsPerOrganization < 1) {
+      newErrors.maxProgramsPerOrganization = 'Minimum 1 programme';
+    }
+
+    if (settings.passwordMinLength < 6 || settings.passwordMinLength > 20) {
+      newErrors.passwordMinLength = 'Doit être entre 6 et 20 caractères';
+    }
+
+    if (settings.sessionTimeoutMinutes < 15 || settings.sessionTimeoutMinutes > 480) {
+      newErrors.sessionTimeoutMinutes = 'Doit être entre 15 et 480 minutes';
+    }
+
+    if (settings.rateLimitPerHour < 100 || settings.rateLimitPerHour > 10000) {
+      newErrors.rateLimitPerHour = 'Doit être entre 100 et 10000';
+    }
+
+    if (settings.reviewScoreThreshold < 0 || settings.reviewScoreThreshold > 100) {
+      newErrors.reviewScoreThreshold = 'Doit être entre 0 et 100%';
+    }
+
+    if (settings.backupFrequencyHours < 1 || settings.backupFrequencyHours > 168) {
+      newErrors.backupFrequencyHours = 'Doit être entre 1 et 168 heures';
+    }
+
+    return newErrors;
+  };
+
+  // Track changes
+  useEffect(() => {
+    setHasUnsavedChanges(true);
+  }, [settings]);
+
+  // Reset changes tracker on initial load
+  useEffect(() => {
+    setHasUnsavedChanges(false);
+  }, []);
+
   const handleSaveSettings = async () => {
+    const validationErrors = validateSettings();
+
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+      alert('Veuillez corriger les erreurs avant de sauvegarder');
+      return;
+    }
+
     setIsLoading(true);
+    setErrors({});
+
     try {
       // TODO: Intégrer avec l'API backend
       console.log('Sauvegarde des paramètres:', settings);
@@ -50,6 +173,7 @@ export const SystemConfiguration: React.FC = () => {
       await new Promise(resolve => setTimeout(resolve, 1000));
 
       alert('Configuration sauvegardée avec succès !');
+      setHasUnsavedChanges(false);
     } catch (error) {
       alert('Erreur lors de la sauvegarde');
     } finally {
@@ -68,6 +192,11 @@ export const SystemConfiguration: React.FC = () => {
         <h1 className="text-2xl font-bold text-red-900 mb-2 flex items-center">
           <span className="mr-2">⚙️</span>
           Configuration Système
+          {hasUnsavedChanges && (
+            <span className="ml-3 px-2 py-1 text-xs bg-orange-100 text-orange-800 rounded-full">
+              ⚠️ Modifications non sauvegardées
+            </span>
+          )}
         </h1>
         <p className="text-gray-600">
           Paramètres globaux de la plateforme GROWF
@@ -134,8 +263,15 @@ export const SystemConfiguration: React.FC = () => {
                 ...prev,
                 maxApplicationsPerUser: parseInt(e.target.value)
               }))}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${
+                errors.maxApplicationsPerUser
+                  ? 'border-red-500 focus:ring-red-500'
+                  : 'border-gray-300 focus:ring-blue-500'
+              }`}
             />
+            {errors.maxApplicationsPerUser && (
+              <p className="mt-1 text-sm text-red-600">{errors.maxApplicationsPerUser}</p>
+            )}
           </div>
 
           <div>
@@ -245,6 +381,353 @@ export const SystemConfiguration: React.FC = () => {
         </div>
       </div>
 
+      {/* Paramètres de la Plateforme */}
+      <div className="bg-white p-6 rounded-lg shadow-sm">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+          <span className="mr-2">🏢</span>
+          Paramètres de la Plateforme
+        </h3>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Nom de la plateforme
+            </label>
+            <input
+              type="text"
+              value={settings.platformName}
+              onChange={(e) => setSettings(prev => ({
+                ...prev,
+                platformName: e.target.value
+              }))}
+              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${
+                errors.platformName
+                  ? 'border-red-500 focus:ring-red-500'
+                  : 'border-gray-300 focus:ring-blue-500'
+              }`}
+            />
+            {errors.platformName && (
+              <p className="mt-1 text-sm text-red-600">{errors.platformName}</p>
+            )}
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Email de support
+            </label>
+            <input
+              type="email"
+              value={settings.supportEmail}
+              onChange={(e) => setSettings(prev => ({
+                ...prev,
+                supportEmail: e.target.value
+              }))}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Code de devise
+            </label>
+            <select
+              value={settings.currencyCode}
+              onChange={(e) => setSettings(prev => ({
+                ...prev,
+                currencyCode: e.target.value
+              }))}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="EUR">EUR - Euro</option>
+              <option value="USD">USD - Dollar US</option>
+              <option value="GBP">GBP - Livre Sterling</option>
+              <option value="CHF">CHF - Franc Suisse</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Langue par défaut
+            </label>
+            <select
+              value={settings.defaultLanguage}
+              onChange={(e) => setSettings(prev => ({
+                ...prev,
+                defaultLanguage: e.target.value
+              }))}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="fr">Français</option>
+              <option value="en">English</option>
+              <option value="de">Deutsch</option>
+              <option value="es">Español</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      {/* Paramètres Financiers */}
+      <div className="bg-white p-6 rounded-lg shadow-sm">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+          <span className="mr-2">💰</span>
+          Paramètres Financiers
+        </h3>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Montant minimum des candidatures ({settings.currencyCode})
+            </label>
+            <input
+              type="number"
+              min="0"
+              value={settings.minApplicationAmount}
+              onChange={(e) => setSettings(prev => ({
+                ...prev,
+                minApplicationAmount: parseInt(e.target.value)
+              }))}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Montant maximum des candidatures ({settings.currencyCode})
+            </label>
+            <input
+              type="number"
+              min="0"
+              value={settings.maxApplicationAmount}
+              onChange={(e) => setSettings(prev => ({
+                ...prev,
+                maxApplicationAmount: parseInt(e.target.value)
+              }))}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Maximum de programmes par organisation
+            </label>
+            <input
+              type="number"
+              min="1"
+              value={settings.maxProgramsPerOrganization}
+              onChange={(e) => setSettings(prev => ({
+                ...prev,
+                maxProgramsPerOrganization: parseInt(e.target.value)
+              }))}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Paramètres de Sécurité */}
+      <div className="bg-white p-6 rounded-lg shadow-sm">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+          <span className="mr-2">🔒</span>
+          Paramètres de Sécurité
+        </h3>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Longueur minimale du mot de passe
+            </label>
+            <input
+              type="number"
+              min="6"
+              max="20"
+              value={settings.passwordMinLength}
+              onChange={(e) => setSettings(prev => ({
+                ...prev,
+                passwordMinLength: parseInt(e.target.value)
+              }))}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Timeout de session (minutes)
+            </label>
+            <input
+              type="number"
+              min="15"
+              max="480"
+              value={settings.sessionTimeoutMinutes}
+              onChange={(e) => setSettings(prev => ({
+                ...prev,
+                sessionTimeoutMinutes: parseInt(e.target.value)
+              }))}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Limite de requêtes par heure
+            </label>
+            <input
+              type="number"
+              min="100"
+              max="10000"
+              value={settings.rateLimitPerHour}
+              onChange={(e) => setSettings(prev => ({
+                ...prev,
+                rateLimitPerHour: parseInt(e.target.value)
+              }))}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+        </div>
+
+        <div className="mt-6 space-y-4">
+          <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+            <div>
+              <p className="font-medium text-gray-900">Vérification des documents obligatoire</p>
+              <p className="text-sm text-gray-600">Exiger la vérification des documents pour toutes les candidatures</p>
+            </div>
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                checked={settings.requireDocumentVerification}
+                onChange={(e) => setSettings(prev => ({
+                  ...prev,
+                  requireDocumentVerification: e.target.checked
+                }))}
+                className="sr-only peer"
+              />
+              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+            </label>
+          </div>
+
+          <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+            <div>
+              <p className="font-medium text-gray-900">Inscription publique autorisée</p>
+              <p className="text-sm text-gray-600">Permettre aux utilisateurs de s'inscrire sans invitation</p>
+            </div>
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                checked={settings.allowPublicRegistration}
+                onChange={(e) => setSettings(prev => ({
+                  ...prev,
+                  allowPublicRegistration: e.target.checked
+                }))}
+                className="sr-only peer"
+              />
+              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      {/* Paramètres Avancés */}
+      <div className="bg-white p-6 rounded-lg shadow-sm">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+          <span className="mr-2">⚡</span>
+          Paramètres Avancés
+        </h3>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Seuil de score pour revue automatique (%)
+            </label>
+            <input
+              type="number"
+              min="0"
+              max="100"
+              value={settings.reviewScoreThreshold}
+              onChange={(e) => setSettings(prev => ({
+                ...prev,
+                reviewScoreThreshold: parseInt(e.target.value)
+              }))}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Fréquence de sauvegarde (heures)
+            </label>
+            <input
+              type="number"
+              min="1"
+              max="168"
+              value={settings.backupFrequencyHours}
+              onChange={(e) => setSettings(prev => ({
+                ...prev,
+                backupFrequencyHours: parseInt(e.target.value)
+              }))}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+        </div>
+
+        <div className="mt-6 space-y-4">
+          <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+            <div>
+              <p className="font-medium text-gray-900">Revue automatique activée</p>
+              <p className="text-sm text-gray-600">Activer la revue automatique des candidatures avec IA</p>
+            </div>
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                checked={settings.autoReviewEnabled}
+                onChange={(e) => setSettings(prev => ({
+                  ...prev,
+                  autoReviewEnabled: e.target.checked
+                }))}
+                className="sr-only peer"
+              />
+              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+            </label>
+          </div>
+
+          <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+            <div>
+              <p className="font-medium text-gray-900">Analytics activées</p>
+              <p className="text-sm text-gray-600">Collecter des données analytiques sur l'utilisation de la plateforme</p>
+            </div>
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                checked={settings.analyticsEnabled}
+                onChange={(e) => setSettings(prev => ({
+                  ...prev,
+                  analyticsEnabled: e.target.checked
+                }))}
+                className="sr-only peer"
+              />
+              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+            </label>
+          </div>
+
+          <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+            <div>
+              <p className="font-medium text-gray-900">Support multilingue</p>
+              <p className="text-sm text-gray-600">Activer le support pour plusieurs langues sur la plateforme</p>
+            </div>
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                checked={settings.multiLanguageEnabled}
+                onChange={(e) => setSettings(prev => ({
+                  ...prev,
+                  multiLanguageEnabled: e.target.checked
+                }))}
+                className="sr-only peer"
+              />
+              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+            </label>
+          </div>
+        </div>
+      </div>
+
       {/* Actions */}
       <div className="bg-white p-6 rounded-lg shadow-sm">
         <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
@@ -252,7 +735,7 @@ export const SystemConfiguration: React.FC = () => {
           Actions Système
         </h3>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <Button variant="outline" className="h-20 flex flex-col items-center justify-center">
             <span className="text-2xl mb-1">🗄️</span>
             <span className="text-sm">Sauvegarde DB</span>
@@ -266,6 +749,11 @@ export const SystemConfiguration: React.FC = () => {
           <Button variant="outline" className="h-20 flex flex-col items-center justify-center">
             <span className="text-2xl mb-1">📊</span>
             <span className="text-sm">Rapport Système</span>
+          </Button>
+
+          <Button variant="outline" className="h-20 flex flex-col items-center justify-center">
+            <span className="text-2xl mb-1">🔄</span>
+            <span className="text-sm">Redémarrer</span>
           </Button>
         </div>
       </div>

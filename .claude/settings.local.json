@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(PORT=3004 npm run dev:full)",
+      "Bash(curl:*)",
+      "Bash(git init:*)",
+      "Bash(git add:*)",
+      "Bash(git remote add:*)",
+      "Bash(git push:*)",
+      "Bash(npx tsc:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
