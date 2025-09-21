@@ -1,0 +1,230 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  COMPANY
+  ORGANIZATION
+  ANALYST
+  ADMIN
+  SUPERADMIN
+}
+
+enum CompanySize {
+  MICRO     // < 10 employés
+  SMALL     // 10-49 employés
+  MEDIUM    // 50-249 employés
+  LARGE     // 250+ employés
+}
+
+enum ApplicationStatus {
+  DRAFT
+  SUBMITTED
+  UNDER_REVIEW
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
+enum ProgramStatus {
+  DRAFT
+  PUBLISHED
+  CLOSED
+  ARCHIVED
+}
+
+enum NotificationType {
+  APPLICATION_SUBMITTED
+  APPLICATION_UPDATED
+  APPLICATION_APPROVED
+  APPLICATION_REJECTED
+  MESSAGE_RECEIVED
+  PROGRAM_DEADLINE
+  SYSTEM_NOTIFICATION
+}
+
+model User {
+  id          String   @id @default(cuid())
+  email       String   @unique
+  password    String
+  role        UserRole
+  isVerified  Boolean  @default(false)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  company              Company?
+  organization         Organization?
+  sessions            Session[]
+  notifications       Notification[]
+  sentMessages        Message[] @relation("MessageSender")
+
+  @@map("users")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  userId       String
+  refreshToken String   @unique
+  expiresAt    DateTime
+  createdAt    DateTime @default(now())
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model Company {
+  id             String      @id @default(cuid())
+  userId         String      @unique
+  name           String
+  siret          String?     @unique
+  sector         String
+  size           CompanySize
+  revenue        Float?
+  location       String
+  address        String?
+  phone          String?
+  website        String?
+  description    String?
+  foundedYear    Int?
+  employeeCount  Int?
+  legalForm      String?
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  // Relations
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  applications Application[]
+  documents    Document[]
+
+  @@map("companies")
+}
+
+model Organization {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  name        String
+  type        String   // Public, Privé, Association, etc.
+  description String?
+  website     String?
+  phone       String?
+  address     String?
+  contactInfo Json?    // Informations de contact flexibles
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  programs Program[]
+
+  @@map("organizations")
+}
+
+model Program {
+  id             String        @id @default(cuid())
+  organizationId String
+  title          String
+  description    String
+  criteria       Json          // Critères d'éligibilité flexibles
+  amountMin      Float?
+  amountMax      Float?
+  deadline       DateTime?
+  status         ProgramStatus @default(DRAFT)
+  sector         String[]      // Secteurs éligibles
+  companySize    CompanySize[] // Tailles d'entreprises éligibles
+  location       String[]      // Zones géographiques éligibles
+  tags           String[]      // Tags pour la recherche
+  requirements   Json?         // Documents requis, etc.
+  applicationForm Json?        // Structure du formulaire de candidature
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  // Relations
+  organization Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  applications Application[]
+
+  @@map("programs")
+}
+
+model Application {
+  id          String            @id @default(cuid())
+  programId   String
+  companyId   String
+  status      ApplicationStatus @default(DRAFT)
+  data        Json              // Données du formulaire de candidature
+  score       Float?            // Score d'évaluation
+  submittedAt DateTime?
+  reviewedAt  DateTime?
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  // Relations
+  program   Program     @relation(fields: [programId], references: [id], onDelete: Cascade)
+  company   Company     @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  documents Document[]
+  messages  Message[]
+
+  @@unique([programId, companyId])
+  @@map("applications")
+}
+
+model Document {
+  id            String       @id @default(cuid())
+  filename      String
+  originalName  String
+  mimetype      String
+  size          Int
+  path          String
+  applicationId String?
+  companyId     String?
+  uploadedAt    DateTime     @default(now())
+
+  // Relations
+  application Application? @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  company     Company?     @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@map("documents")
+}
+
+model Message {
+  id            String      @id @default(cuid())
+  applicationId String
+  senderId      String
+  content       String
+  attachments   String[]    // Chemins vers les pièces jointes
+  readAt        DateTime?
+  createdAt     DateTime    @default(now())
+
+  // Relations
+  application Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  sender      User        @relation("MessageSender", fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@map("messages")
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  type      NotificationType
+  title     String
+  message   String
+  data      Json?            // Données supplémentaires
+  readAt    DateTime?
+  createdAt DateTime         @default(now())
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
+}

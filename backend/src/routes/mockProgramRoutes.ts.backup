@@ -1,0 +1,20 @@
+import { Router } from 'express';
+import { MockProgramController } from '../controllers/mockProgramController';
+
+const router = Router();
+
+// Public routes - accessible to everyone (v2)
+router.get('/public', MockProgramController.getPublicPrograms);
+router.get('/public/:id', MockProgramController.getPublicProgramById);
+
+// Protected routes - temporarily without authentication
+router.get('/', MockProgramController.getPrograms);
+router.post('/', MockProgramController.createProgram);
+router.get('/:id', MockProgramController.getProgramById);
+router.put('/:id', MockProgramController.updateProgram);
+router.delete('/:id', MockProgramController.deleteProgram);
+router.patch('/:id/status', MockProgramController.updateProgramStatus);
+router.post('/:id/duplicate', MockProgramController.duplicateProgram);
+router.get('/:id/statistics', MockProgramController.getProgramStatistics);
+
+export default router;
