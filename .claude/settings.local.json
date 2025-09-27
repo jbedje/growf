@@ -33,7 +33,8 @@
       "Bash(PORT=3003 npm run dev)",
       "Bash(cmd /c:*)",
       "Bash(PORT=3005 npm run dev:backend)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(docker build:*)"
     ],
     "deny": [],
     "ask": []

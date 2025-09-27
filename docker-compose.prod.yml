@@ -47,19 +47,22 @@ services:
     restart: unless-stopped
     environment:
       NODE_ENV: production
-      PORT: 3001
+      PORT: 3005
       DATABASE_URL: postgresql://${DB_USER:-growf_user}:${DB_PASSWORD:-change_this_password}@postgres:5432/growf_prod
       REDIS_URL: redis://:${REDIS_PASSWORD:-change_this_redis_password}@redis:6379
       JWT_SECRET: ${JWT_SECRET}
       JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}
-      CORS_ORIGINS: ${CORS_ORIGINS:-https://yourdomain.com}
+      CORS_ORIGINS: https://growf2.cipme.ci
       RATE_LIMIT_WINDOW_MS: ${RATE_LIMIT_WINDOW_MS:-900000}
       RATE_LIMIT_MAX_REQUESTS: ${RATE_LIMIT_MAX_REQUESTS:-100}
-      SMTP_HOST: ${SMTP_HOST}
-      SMTP_PORT: ${SMTP_PORT:-587}
-      SMTP_USER: ${SMTP_USER}
-      SMTP_PASS: ${SMTP_PASS}
-      FROM_EMAIL: ${FROM_EMAIL}
+      SMTP_HOST: mail.smtp2go.com
+      SMTP_PORT: 587
+      SMTP_SECURE: false
+      SMTP_USER: growf@cipme.ci
+      SMTP_PASS: ${SMTP_PASSWORD}
+      EMAIL_FROM: growf@cipme.ci
+      FRONTEND_URL: https://growf2.cipme.ci
+      BACKEND_URL: https://growf2.cipme.ci/api
     ports:
       - "${BACKEND_PORT:-3001}:3001"
     depends_on:
