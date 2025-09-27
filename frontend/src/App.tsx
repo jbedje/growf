@@ -11,6 +11,7 @@ import { BackofficeLayout } from './components/common/BackofficeLayout';
 
 // Public Pages
 import { HomePage } from './pages/HomePage';
+import { LandingPage } from './pages/LandingPage';
 import { LoginPage } from './pages/auth/LoginPage';
 import { RegisterPage } from './pages/auth/RegisterPage';
 import { VerifyEmailPage } from './pages/auth/VerifyEmailPage';
@@ -70,14 +71,15 @@ function App() {
 
           <Routes>
             {/* Routes publiques du frontoffice */}
-            <Route path="/" element={<PublicLayout><HomePage /></PublicLayout>} />
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/home" element={<PublicLayout><HomePage /></PublicLayout>} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/verify-email/:token" element={<VerifyEmailPage />} />
             <Route path="/forgot-password" element={<ForgotPasswordPage />} />
             <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
-            <Route path="/programs" element={<PublicLayout><ProgramsPage /></PublicLayout>} />
-            <Route path="/programs/:id" element={<PublicLayout><ProgramDetailsPage /></PublicLayout>} />
+            <Route path="/programs" element={<ProgramsPage />} />
+            <Route path="/programs/:id" element={<ProgramDetailsPage />} />
 
             {/* Routes protégées utilisateurs */}
             <Route
