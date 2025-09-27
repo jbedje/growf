@@ -35,10 +35,6 @@ export const ApplicationManagement: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedStatus, setSelectedStatus] = useState<string>('');
 
-  useEffect(() => {
-    loadApplications();
-  }, [loadApplications]);
-
   const loadApplications = useCallback(async () => {
     try {
       setLoading(true);
@@ -56,6 +52,10 @@ export const ApplicationManagement: React.FC = () => {
       setLoading(false);
     }
   }, [filters]);
+
+  useEffect(() => {
+    loadApplications();
+  }, [loadApplications]);
 
   const handleFilterChange = (newFilters: Partial<ApplicationFilters>) => {
     setFilters(prev => ({
