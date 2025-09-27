@@ -13,7 +13,7 @@ const registerSchema = z.object({
   password: z.string()
     .min(8, 'Le mot de passe doit contenir au moins 8 caractères')
     .regex(
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\$%\^&\*])/,
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*])/,
       'Le mot de passe doit contenir au moins une lettre minuscule, une majuscule, un chiffre et un caractère spécial'
     ),
   confirmPassword: z.string(),
@@ -38,13 +38,14 @@ export const RegisterPage: React.FC = () => {
 
   const onSubmit = async (data: RegisterFormData) => {
     try {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { confirmPassword, ...registerData } = data;
       // Tous les comptes créés via l'inscription publique sont des comptes COMPANY
       const finalData = { ...registerData, role: UserRole.COMPANY };
       await registerUser(finalData as RegisterRequest);
       toast.success('Compte créé avec succès ! Vérifiez votre email pour activer votre compte.');
       navigate('/login');
-    } catch (error) {
+    } catch {
       // Error is handled by the store and toast
     }
   };

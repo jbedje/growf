@@ -103,7 +103,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({
       setUploadComplete(true);
       setDescription('');
       toast.success('Fichier uploadé avec succès');
-    } catch (error) {
+    } catch {
       toast.error('Erreur lors de l\'upload du fichier');
     } finally {
       setUploading(false);

@@ -5,7 +5,7 @@ import { AuthRequest } from '../middleware/authorization';
 const prisma = new PrismaClient();
 
 export class CompanyController {
-  static async getAllCompanies(req: Request, res: Response) {
+  static async getAllCompanies(req: Request, res: Response): Promise<void> {
     try {
       const { search, sector, size, location, page = 1, limit = 10 } = req.query;
 
@@ -77,7 +77,7 @@ export class CompanyController {
     }
   }
 
-  static async getCompanyById(req: AuthRequest, res: Response) {
+  static async getCompanyById(req: AuthRequest, res: Response): Promise<void> {
     try {
       const { id } = req.params;
       const user = req.user!;
@@ -89,11 +89,20 @@ export class CompanyController {
         });
 
         if (!userCompany || userCompany.id !== id) {
-          return res.status(403).json({
+          res.status(403).json({
             success: false,
             message: 'Accès refusé'
           });
+          return;
         }
+      }
+
+      if (!id) {
+        res.status(400).json({
+          success: false,
+          message: 'ID de l\'entreprise requis'
+        });
+        return;
       }
 
       const company = await prisma.company.findUnique({
@@ -118,7 +127,7 @@ export class CompanyController {
       });
 
       if (!company) {
-        return res.status(404).json({
+        res.status(404).json({
           success: false,
           message: 'Entreprise non trouvée'
         });
@@ -137,7 +146,7 @@ export class CompanyController {
     }
   }
 
-  static async updateCompany(req: AuthRequest, res: Response) {
+  static async updateCompany(req: AuthRequest, res: Response): Promise<void> {
     try {
       const { id } = req.params;
       const user = req.user!;
@@ -150,11 +159,20 @@ export class CompanyController {
         });
 
         if (!userCompany || userCompany.id !== id) {
-          return res.status(403).json({
+          res.status(403).json({
             success: false,
             message: 'Accès refusé'
           });
+          return;
         }
+      }
+
+      if (!id) {
+        res.status(400).json({
+          success: false,
+          message: 'ID de l\'entreprise requis'
+        });
+        return;
       }
 
       const company = await prisma.company.update({
@@ -185,9 +203,17 @@ export class CompanyController {
     }
   }
 
-  static async deleteCompany(req: Request, res: Response) {
+  static async deleteCompany(req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params;
+
+      if (!id) {
+        res.status(400).json({
+          success: false,
+          message: 'ID de l\'entreprise requis'
+        });
+        return;
+      }
 
       // Supprimer l'entreprise et l'utilisateur associé
       await prisma.$transaction(async (tx) => {
@@ -217,7 +243,7 @@ export class CompanyController {
     }
   }
 
-  static async getMyCompany(req: AuthRequest, res: Response) {
+  static async getMyCompany(req: AuthRequest, res: Response): Promise<void> {
     try {
       const user = req.user!;
 
@@ -243,7 +269,7 @@ export class CompanyController {
       });
 
       if (!company) {
-        return res.status(404).json({
+        res.status(404).json({
           success: false,
           message: 'Entreprise non trouvée'
         });
@@ -262,7 +288,7 @@ export class CompanyController {
     }
   }
 
-  static async updateMyCompany(req: AuthRequest, res: Response) {
+  static async updateMyCompany(req: AuthRequest, res: Response): Promise<void> {
     try {
       const user = req.user!;
       const updateData = req.body;
@@ -295,7 +321,7 @@ export class CompanyController {
     }
   }
 
-  static async getCompanyStatistics(req: AuthRequest, res: Response) {
+  static async getCompanyStatistics(req: AuthRequest, res: Response): Promise<void> {
     try {
       const { id } = req.params;
       const user = req.user!;
@@ -307,11 +333,20 @@ export class CompanyController {
         });
 
         if (!userCompany || userCompany.id !== id) {
-          return res.status(403).json({
+          res.status(403).json({
             success: false,
             message: 'Accès refusé'
           });
+          return;
         }
+      }
+
+      if (!id) {
+        res.status(400).json({
+          success: false,
+          message: 'ID de l\'entreprise requis'
+        });
+        return;
       }
 
       const company = await prisma.company.findUnique({
@@ -327,7 +362,7 @@ export class CompanyController {
       });
 
       if (!company) {
-        return res.status(404).json({
+        res.status(404).json({
           success: false,
           message: 'Entreprise non trouvée'
         });
@@ -341,8 +376,8 @@ export class CompanyController {
       });
 
       const stats = {
-        totalApplications: company._count.applications,
-        totalDocuments: company._count.documents,
+        totalApplications: company!._count?.applications || 0,
+        totalDocuments: company!._count?.documents || 0,
         applicationsByStatus: applicationStats.reduce((acc, stat) => {
           acc[stat.status] = stat._count;
           return acc;
@@ -362,7 +397,7 @@ export class CompanyController {
     }
   }
 
-  static async getCompaniesStatistics(req: Request, res: Response) {
+  static async getCompaniesStatistics(req: Request, res: Response): Promise<void> {
     try {
       const totalCompanies = await prisma.company.count();
 

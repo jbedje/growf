@@ -24,6 +24,7 @@ import { DashboardPage } from './pages/DashboardPage';
 import { ProfilePage } from './pages/ProfilePage';
 import { ApplicationsPage } from './pages/ApplicationsPage';
 import { CreateProgramPage } from './pages/CreateProgramPage';
+import { SettingsPage } from './pages/SettingsPage';
 
 // Backoffice Pages
 // import { BackofficeDashboard } from './pages/backoffice/BackofficeDashboard';
@@ -37,6 +38,7 @@ import ApplicationReview from './pages/backoffice/ApplicationReview';
 import { OrganizationManagement } from './pages/backoffice/OrganizationManagement';
 import { AdminDashboard } from './pages/backoffice/AdminDashboard';
 import { SuperadminDashboard } from './pages/backoffice/SuperadminDashboard';
+import { ConfigSuperadmin } from './pages/backoffice/ConfigSuperadmin';
 
 import { NotFoundPage } from './pages/NotFoundPage';
 import { UserRole } from './types';
@@ -104,6 +106,16 @@ function App() {
                 <AuthGuard>
                   <Layout>
                     <ApplicationsPage />
+                  </Layout>
+                </AuthGuard>
+              }
+            />
+            <Route
+              path="/settings"
+              element={
+                <AuthGuard>
+                  <Layout>
+                    <SettingsPage />
                   </Layout>
                 </AuthGuard>
               }
@@ -226,6 +238,16 @@ function App() {
                 <BackofficeGuard requiredRoles={[UserRole.ORGANIZATION, UserRole.ADMIN, UserRole.SUPERADMIN]}>
                   <BackofficeLayout>
                     <OrganizationManagement />
+                  </BackofficeLayout>
+                </BackofficeGuard>
+              }
+            />
+            <Route
+              path="/backoffice/config_superadmin"
+              element={
+                <BackofficeGuard requiredRoles={[UserRole.SUPERADMIN]}>
+                  <BackofficeLayout>
+                    <ConfigSuperadmin />
                   </BackofficeLayout>
                 </BackofficeGuard>
               }

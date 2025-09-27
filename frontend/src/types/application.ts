@@ -3,7 +3,11 @@ export interface Application {
   programId: string;
   companyId: string;
   status: 'DRAFT' | 'SUBMITTED' | 'UNDER_REVIEW' | 'APPROVED' | 'REJECTED' | 'CANCELLED';
-  data: any;
+  data: {
+    answers?: Record<string, unknown>;
+    documents?: string[];
+    [key: string]: unknown;
+  };
   score?: number;
   submittedAt?: string;
   reviewedAt?: string;
@@ -16,8 +20,21 @@ export interface Application {
     deadline?: string;
     amountMin?: number;
     amountMax?: number;
-    requirements?: any;
-    applicationForm?: any;
+    requirements?: {
+      documents?: string[];
+      conditions?: string[];
+      [key: string]: unknown;
+    };
+    applicationForm?: {
+      fields?: Array<{
+        name: string;
+        type: string;
+        label: string;
+        required?: boolean;
+        options?: string[];
+      }>;
+      [key: string]: unknown;
+    };
     organization: {
       id: string;
       name: string;
@@ -63,7 +80,11 @@ export interface Message {
 
 export interface CreateApplicationData {
   programId: string;
-  data: any;
+  data: {
+    answers?: Record<string, unknown>;
+    documents?: string[];
+    [key: string]: unknown;
+  };
 }
 
 export interface ApplicationFilters {
@@ -71,6 +92,7 @@ export interface ApplicationFilters {
   programId?: string;
   page?: number;
   limit?: number;
+  [key: string]: unknown;
 }
 
 export interface ApplicationStatistics {

@@ -60,9 +60,15 @@ const menuItems: MenuItem[] = [
     roles: [UserRole.ADMIN, UserRole.SUPERADMIN],
   },
   {
-    name: 'Configuration',
-    href: '/backoffice/admin',
+    name: 'Configuration Système',
+    href: '/backoffice/settings',
     icon: '⚙️',
+    roles: [UserRole.SUPERADMIN],
+  },
+  {
+    name: 'Configuration Superadmin',
+    href: '/backoffice/config_superadmin',
+    icon: '🏛️',
     roles: [UserRole.SUPERADMIN],
   },
 ];

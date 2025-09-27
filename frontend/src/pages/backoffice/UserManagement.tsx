@@ -107,7 +107,7 @@ export const UserManagement: React.FC = () => {
         role: UserRole.ANALYST
       });
       setShowCreateForm(false);
-    } catch (error) {
+    } catch {
       alert('Erreur lors de la création du compte');
     }
   };

@@ -5,7 +5,7 @@ import { AuthRequest, ApiResponse } from '../types';
 import { logger } from '../config/logger';
 
 export class AuthController {
-  static async register(req: Request, res: Response) {
+  static async register(req: Request, res: Response): Promise<void> {
     try {
       const validatedData = validate(userValidationSchema.register, req.body);
       const result = await AuthService.register(validatedData);
@@ -15,16 +15,18 @@ export class AuthController {
         data: result.user,
         message: result.message
       } as ApiResponse);
+      return;
     } catch (error: any) {
       logger.error('Error in register controller:', error);
       res.status(400).json({
         success: false,
         error: error.message
       } as ApiResponse);
+      return;
     }
   }
 
-  static async login(req: Request, res: Response) {
+  static async login(req: Request, res: Response): Promise<void> {
     try {
       const validatedData = validate(userValidationSchema.login, req.body);
       const result = await AuthService.login(validatedData);
@@ -45,21 +47,23 @@ export class AuthController {
         },
         message: 'Connexion réussie'
       } as ApiResponse);
+      return;
     } catch (error: any) {
       logger.error('Error in login controller:', error);
       res.status(401).json({
         success: false,
         error: error.message
       } as ApiResponse);
+      return;
     }
   }
 
-  static async refreshToken(req: Request, res: Response) {
+  static async refreshToken(req: Request, res: Response): Promise<void> {
     try {
       const refreshToken = req.cookies.refreshToken || req.body.refreshToken;
 
       if (!refreshToken) {
-        return res.status(401).json({
+        res.status(401).json({
           success: false,
           error: 'Token de rafraîchissement requis'
         } as ApiResponse);
@@ -74,16 +78,18 @@ export class AuthController {
           accessToken: result.accessToken
         }
       } as ApiResponse);
+      return;
     } catch (error: any) {
       logger.error('Error in refreshToken controller:', error);
       res.status(401).json({
         success: false,
         error: error.message
       } as ApiResponse);
+      return;
     }
   }
 
-  static async logout(req: AuthRequest, res: Response) {
+  static async logout(req: AuthRequest, res: Response): Promise<void> {
     try {
       const refreshToken = req.cookies.refreshToken;
       const accessToken = req.headers.authorization?.split(' ')[1];
@@ -99,24 +105,27 @@ export class AuthController {
         success: true,
         message: 'Déconnexion réussie'
       } as ApiResponse);
+      return;
     } catch (error: any) {
       logger.error('Error in logout controller:', error);
       res.status(500).json({
         success: false,
         error: 'Erreur lors de la déconnexion'
       } as ApiResponse);
+      return;
     }
   }
 
-  static async verifyEmail(req: Request, res: Response) {
+  static async verifyEmail(req: Request, res: Response): Promise<void> {
     try {
       const { token } = req.params;
 
       if (!token) {
-        return res.status(400).json({
+        res.status(400).json({
           success: false,
           error: 'Token requis'
         } as ApiResponse);
+        return;
       }
 
       const result = await AuthService.verifyEmail(token);
@@ -125,12 +134,14 @@ export class AuthController {
         success: true,
         message: result.message
       } as ApiResponse);
+      return;
     } catch (error: any) {
       logger.error('Error in verifyEmail controller:', error);
       res.status(400).json({
         success: false,
         error: error.message
       } as ApiResponse);
+      return;
     }
   }
 
@@ -143,12 +154,14 @@ export class AuthController {
         success: true,
         message: result.message
       } as ApiResponse);
+      return;
     } catch (error: any) {
       logger.error('Error in forgotPassword controller:', error);
       res.status(500).json({
         success: false,
         error: 'Erreur lors de l\'envoi de l\'email'
       } as ApiResponse);
+      return;
     }
   }
 
@@ -161,12 +174,14 @@ export class AuthController {
         success: true,
         message: result.message
       } as ApiResponse);
+      return;
     } catch (error: any) {
       logger.error('Error in resetPassword controller:', error);
       res.status(400).json({
         success: false,
         error: error.message
       } as ApiResponse);
+      return;
     }
   }
 
@@ -175,14 +190,14 @@ export class AuthController {
       const validatedData = validate(userValidationSchema.changePassword, req.body);
 
       if (!req.user) {
-        return res.status(401).json({
+        res.status(401).json({
           success: false,
           error: 'Authentification requise'
         } as ApiResponse);
       }
 
       const result = await AuthService.changePassword(
-        req.user.id,
+        req.user!.id,
         validatedData.currentPassword,
         validatedData.newPassword
       );
@@ -191,19 +206,21 @@ export class AuthController {
         success: true,
         message: result.message
       } as ApiResponse);
+      return;
     } catch (error: any) {
       logger.error('Error in changePassword controller:', error);
       res.status(400).json({
         success: false,
         error: error.message
       } as ApiResponse);
+      return;
     }
   }
 
   static async getProfile(req: AuthRequest, res: Response) {
     try {
       if (!req.user) {
-        return res.status(401).json({
+        res.status(401).json({
           success: false,
           error: 'Authentification requise'
         } as ApiResponse);
@@ -213,12 +230,14 @@ export class AuthController {
         success: true,
         data: req.user
       } as ApiResponse);
+      return;
     } catch (error: any) {
       logger.error('Error in getProfile controller:', error);
       res.status(500).json({
         success: false,
         error: 'Erreur lors de la récupération du profil'
       } as ApiResponse);
+      return;
     }
   }
 }

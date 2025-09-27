@@ -20,7 +20,7 @@ export const LoginPage: React.FC = () => {
   const location = useLocation();
   const { login, isLoading } = useAuthStore();
 
-  const from = (location.state as any)?.from?.pathname || '/dashboard';
+  const from = (location.state as { from?: { pathname: string } })?.from?.pathname || '/dashboard';
 
   const {
     register,
@@ -52,7 +52,7 @@ export const LoginPage: React.FC = () => {
 
       console.log('Login successful, redirecting to:', redirectPath);
       navigate(redirectPath, { replace: true });
-    } catch (error) {
+    } catch {
       // Error is handled by the store and toast
     }
   };

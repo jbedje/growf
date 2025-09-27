@@ -14,8 +14,8 @@ export class NotificationService {
       data: request.data,
       read: false,
       createdAt: new Date().toISOString(),
-      applicationId: request.applicationId,
-      relatedEntity: request.relatedEntity
+      ...(request.applicationId && { applicationId: request.applicationId }),
+      ...(request.relatedEntity && { relatedEntity: request.relatedEntity })
     };
 
     this.notifications.push(notification);
@@ -163,7 +163,7 @@ export class NotificationService {
     const existingIndex = this.preferences.findIndex(p => p.userId === userId);
 
     if (existingIndex !== -1) {
-      this.preferences[existingIndex] = { ...this.preferences[existingIndex], ...preferences };
+      this.preferences[existingIndex] = { ...this.preferences[existingIndex], ...preferences } as NotificationPreferences;
       return this.preferences[existingIndex];
     } else {
       const defaultPreferences: NotificationPreferences = {

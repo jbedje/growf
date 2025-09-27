@@ -852,6 +852,336 @@ app.get('/api/organizations/:id', (req, res) => {
   });
 });
 
+// Company Settings API endpoints
+app.get('/api/company/settings', (req, res) => {
+  const mockSettings = {
+    general: {
+      companyName: 'Mon Entreprise Demo',
+      email: 'contact@monentreprise.fr',
+      phone: '+33 1 23 45 67 89',
+      website: 'https://www.monentreprise.fr',
+      language: 'fr',
+      timezone: 'Europe/Paris',
+    },
+    notifications: {
+      emailNotifications: true,
+      pushNotifications: false,
+      applicationUpdates: true,
+      programRecommendations: true,
+      marketingEmails: false,
+      weeklyReports: true,
+    },
+    dashboard: {
+      defaultView: 'overview',
+      autoRefresh: true,
+      refreshInterval: 300,
+      theme: 'light',
+      compactMode: false,
+    },
+    privacy: {
+      profileVisibility: 'public',
+      dataSharing: true,
+      analyticsTracking: true,
+      marketingCookies: false,
+    },
+    security: {
+      twoFactorAuth: false,
+      sessionTimeout: 30,
+      passwordExpiry: 90,
+      loginNotifications: true,
+    },
+  };
+
+  res.json({
+    success: true,
+    data: mockSettings,
+    message: 'Settings retrieved successfully (mock mode)'
+  });
+});
+
+app.put('/api/company/settings', (req, res) => {
+  const settings = req.body;
+  console.log('Updating company settings (mock mode):', settings);
+
+  res.json({
+    success: true,
+    data: settings,
+    message: 'Settings updated successfully (mock mode)'
+  });
+});
+
+app.put('/api/company/settings/notifications', (req, res) => {
+  const notificationSettings = req.body;
+  console.log('Updating notification settings (mock mode):', notificationSettings);
+
+  res.json({
+    success: true,
+    data: notificationSettings,
+    message: 'Notification settings updated successfully (mock mode)'
+  });
+});
+
+app.put('/api/company/settings/dashboard', (req, res) => {
+  const dashboardSettings = req.body;
+  console.log('Updating dashboard settings (mock mode):', dashboardSettings);
+
+  res.json({
+    success: true,
+    data: dashboardSettings,
+    message: 'Dashboard settings updated successfully (mock mode)'
+  });
+});
+
+app.put('/api/company/settings/privacy', (req, res) => {
+  const privacySettings = req.body;
+  console.log('Updating privacy settings (mock mode):', privacySettings);
+
+  res.json({
+    success: true,
+    data: privacySettings,
+    message: 'Privacy settings updated successfully (mock mode)'
+  });
+});
+
+app.put('/api/company/settings/security', (req, res) => {
+  const securitySettings = req.body;
+  console.log('Updating security settings (mock mode):', securitySettings);
+
+  res.json({
+    success: true,
+    data: securitySettings,
+    message: 'Security settings updated successfully (mock mode)'
+  });
+});
+
+app.post('/api/company/settings/reset', (req, res) => {
+  console.log('Resetting settings to defaults (mock mode)');
+
+  const defaultSettings = {
+    general: {
+      companyName: '',
+      email: '',
+      phone: '',
+      website: '',
+      language: 'fr',
+      timezone: 'Europe/Paris',
+    },
+    notifications: {
+      emailNotifications: true,
+      pushNotifications: true,
+      applicationUpdates: true,
+      programRecommendations: true,
+      marketingEmails: false,
+      weeklyReports: true,
+    },
+    dashboard: {
+      defaultView: 'overview',
+      autoRefresh: true,
+      refreshInterval: 300,
+      theme: 'light',
+      compactMode: false,
+    },
+    privacy: {
+      profileVisibility: 'public',
+      dataSharing: false,
+      analyticsTracking: false,
+      marketingCookies: false,
+    },
+    security: {
+      twoFactorAuth: false,
+      sessionTimeout: 30,
+      passwordExpiry: 90,
+      loginNotifications: true,
+    },
+  };
+
+  res.json({
+    success: true,
+    data: defaultSettings,
+    message: 'Settings reset to defaults successfully (mock mode)'
+  });
+});
+
+app.get('/api/company/settings/export', (req, res) => {
+  const mockSettings = {
+    general: {
+      companyName: 'Mon Entreprise Demo',
+      email: 'contact@monentreprise.fr',
+      phone: '+33 1 23 45 67 89',
+      website: 'https://www.monentreprise.fr',
+      language: 'fr',
+      timezone: 'Europe/Paris',
+    },
+    notifications: {
+      emailNotifications: true,
+      pushNotifications: false,
+      applicationUpdates: true,
+      programRecommendations: true,
+      marketingEmails: false,
+      weeklyReports: true,
+    },
+    dashboard: {
+      defaultView: 'overview',
+      autoRefresh: true,
+      refreshInterval: 300,
+      theme: 'light',
+      compactMode: false,
+    },
+    privacy: {
+      profileVisibility: 'public',
+      dataSharing: true,
+      analyticsTracking: true,
+      marketingCookies: false,
+    },
+    security: {
+      twoFactorAuth: false,
+      sessionTimeout: 30,
+      passwordExpiry: 90,
+      loginNotifications: true,
+    },
+    exportInfo: {
+      exportedAt: new Date().toISOString(),
+      version: '1.0.0',
+      type: 'company-settings'
+    }
+  };
+
+  res.setHeader('Content-Type', 'application/json');
+  res.setHeader('Content-Disposition', 'attachment; filename="company-settings.json"');
+  res.json(mockSettings);
+});
+
+app.post('/api/company/settings/import', (req, res) => {
+  const importedSettings = req.body;
+  console.log('Importing settings (mock mode):', importedSettings);
+
+  res.json({
+    success: true,
+    data: importedSettings,
+    message: 'Settings imported successfully (mock mode)'
+  });
+});
+
+// Company Profile API endpoints
+app.get('/api/company/profile', (req, res) => {
+  const mockProfile = {
+    id: 'company-1',
+    name: 'Mon Entreprise Demo',
+    email: 'contact@monentreprise.fr',
+    phone: '+33 1 23 45 67 89',
+    website: 'https://www.monentreprise.fr',
+    description: 'Entreprise de démonstration pour la plateforme GROWF',
+    sector: 'Technologie',
+    size: 'PME',
+    siret: '12345678901234',
+    address: {
+      street: '123 Rue de la Demo',
+      city: 'Paris',
+      postalCode: '75001',
+      country: 'France'
+    },
+    createdAt: '2024-01-01T00:00:00.000Z',
+    updatedAt: new Date().toISOString()
+  };
+
+  res.json({
+    success: true,
+    data: mockProfile,
+    message: 'Company profile retrieved successfully (mock mode)'
+  });
+});
+
+app.put('/api/company/profile', (req, res) => {
+  const profileData = req.body;
+  console.log('Updating company profile (mock mode):', profileData);
+
+  const updatedProfile = {
+    ...profileData,
+    id: 'company-1',
+    updatedAt: new Date().toISOString()
+  };
+
+  res.json({
+    success: true,
+    data: updatedProfile,
+    message: 'Company profile updated successfully (mock mode)'
+  });
+});
+
+// Dashboard API endpoints
+app.get('/api/dashboard/stats', (req, res) => {
+  const { timeRange = '30d' } = req.query;
+  console.log('Getting dashboard stats for time range:', timeRange);
+
+  const mockStats = {
+    applications: {
+      total: 15,
+      pending: 3,
+      approved: 8,
+      rejected: 4,
+      recentlySubmitted: 2
+    },
+    programs: {
+      available: 12,
+      eligible: 8,
+      applied: 5
+    },
+    company: {
+      profileCompletion: 85,
+      documentsUploaded: 12,
+      lastActivity: new Date().toISOString()
+    },
+    timeline: [
+      { date: '2024-01-01', applications: 2, approvals: 1 },
+      { date: '2024-01-08', applications: 3, approvals: 2 },
+      { date: '2024-01-15', applications: 1, approvals: 0 },
+      { date: '2024-01-22', applications: 2, approvals: 1 }
+    ]
+  };
+
+  res.json({
+    success: true,
+    data: mockStats,
+    message: `Dashboard stats for ${timeRange} retrieved successfully (mock mode)`
+  });
+});
+
+app.get('/api/dashboard/export', (req, res) => {
+  const { format = 'csv', timeRange = '30d' } = req.query;
+  console.log('Exporting dashboard data:', { format, timeRange });
+
+  // Mock export data
+  const exportData = {
+    exportInfo: {
+      format,
+      timeRange,
+      exportedAt: new Date().toISOString(),
+      recordCount: 15
+    },
+    data: 'Application ID,Program,Status,Date,Amount\napp-1,Innovation Tech,Approved,2024-01-15,25000\napp-2,Digital Transform,Pending,2024-01-20,15000'
+  };
+
+  if (format === 'csv') {
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', 'attachment; filename="dashboard-export.csv"');
+    res.send(exportData.data);
+  } else {
+    res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Content-Disposition', `attachment; filename="dashboard-export.${format}"`);
+    res.json(exportData);
+  }
+});
+
+app.post('/api/dashboard/refresh', (req, res) => {
+  console.log('Refreshing dashboard data (mock mode)');
+
+  res.json({
+    success: true,
+    message: 'Dashboard data refreshed successfully (mock mode)',
+    timestamp: new Date().toISOString()
+  });
+});
+
 // Route 404
 app.use('*', (req, res) => {
   res.status(404).json({

@@ -240,8 +240,16 @@ export class ApplicationController {
         return;
       } else {
         // Pour les organisations et admins
+        if (!id) {
+          res.status(400).json({
+            success: false,
+            message: 'ID de candidature requis'
+          });
+          return;
+        }
+
         application = await prisma.application.findUnique({
-          where: { id: id! },
+          where: { id },
           include: {
             program: {
               select: {
@@ -330,6 +338,14 @@ export class ApplicationController {
       const user = req.user!;
       const updateData = req.body;
 
+      if (!id) {
+        res.status(400).json({
+          success: false,
+          message: 'ID de candidature requis'
+        });
+        return;
+      }
+
       const company = await prisma.company.findUnique({
         where: { userId: user.id }
       });
@@ -403,6 +419,14 @@ export class ApplicationController {
       const { id } = req.params;
       const user = req.user!;
 
+      if (!id) {
+        res.status(400).json({
+          success: false,
+          message: 'ID de candidature requis'
+        });
+        return;
+      }
+
       const company = await prisma.company.findUnique({
         where: { userId: user.id }
       });
@@ -459,6 +483,14 @@ export class ApplicationController {
       const { id } = req.params;
       const user = req.user!;
 
+      if (!id) {
+        res.status(400).json({
+          success: false,
+          message: 'ID de candidature requis'
+        });
+        return;
+      }
+
       const company = await prisma.company.findUnique({
         where: { userId: user.id }
       });
@@ -471,7 +503,7 @@ export class ApplicationController {
         return;
       }
 
-      const application = await prisma.application.findUnique({
+      const application = await prisma.application.findFirst({
         where: {
           id,
           companyId: company.id
@@ -559,6 +591,7 @@ export class ApplicationController {
             success: false,
             message: 'Organisation non trouvée'
           });
+          return;
         }
 
         where.program = {
@@ -645,20 +678,29 @@ export class ApplicationController {
             success: false,
             message: 'Organisation non trouvée'
           });
+          return;
+        }
+
+        if (!programId) {
+          res.status(400).json({
+            success: false,
+            message: 'ID de programme requis'
+          });
+          return;
         }
 
         const program = await prisma.program.findUnique({
           where: {
-            id: programId,
-            organizationId: organization.id
+            id: programId
           }
         });
 
-        if (!program) {
+        if (!program || program.organizationId !== organization.id) {
           res.status(404).json({
             success: false,
             message: 'Programme non trouvé'
           });
+          return;
         }
       }
 
@@ -726,10 +768,19 @@ export class ApplicationController {
             success: false,
             message: 'Organisation non trouvée'
           });
+          return;
+        }
+
+        if (!id) {
+          res.status(400).json({
+            success: false,
+            message: 'ID de candidature requis'
+          });
+          return;
         }
 
         const application = await prisma.application.findUnique({
-          where: { id: id! },
+          where: { id },
           include: { program: true }
         });
 
@@ -738,7 +789,16 @@ export class ApplicationController {
             success: false,
             message: 'Candidature non trouvée'
           });
+          return;
         }
+      }
+
+      if (!id) {
+        res.status(400).json({
+          success: false,
+          message: 'ID de candidature requis'
+        });
+        return;
       }
 
       const updatedApplication = await prisma.application.update({
@@ -799,10 +859,19 @@ export class ApplicationController {
             success: false,
             message: 'Organisation non trouvée'
           });
+          return;
+        }
+
+        if (!id) {
+          res.status(400).json({
+            success: false,
+            message: 'ID de candidature requis'
+          });
+          return;
         }
 
         const application = await prisma.application.findUnique({
-          where: { id: id! },
+          where: { id },
           include: { program: true }
         });
 
@@ -811,7 +880,16 @@ export class ApplicationController {
             success: false,
             message: 'Candidature non trouvée'
           });
+          return;
         }
+      }
+
+      if (!id) {
+        res.status(400).json({
+          success: false,
+          message: 'ID de candidature requis'
+        });
+        return;
       }
 
       const updatedApplication = await prisma.application.update({
@@ -853,6 +931,7 @@ export class ApplicationController {
             success: false,
             message: 'Organisation non trouvée'
           });
+          return;
         }
 
         where.program = {

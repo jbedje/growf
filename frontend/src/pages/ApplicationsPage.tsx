@@ -180,7 +180,7 @@ export const ApplicationsPage: React.FC = () => {
         await ApplicationService.updateApplicationStatus(applicationId, 'CANCELLED');
         toast.success('Candidature annulée avec succès');
         loadApplications();
-      } catch (error) {
+      } catch {
         toast.error('Erreur lors de l\'annulation de la candidature');
       }
     }

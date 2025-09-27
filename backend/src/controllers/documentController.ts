@@ -7,17 +7,18 @@ import path from 'path';
 const prisma = new PrismaClient();
 
 export class DocumentController {
-  static async uploadDocument(req: AuthRequest, res: Response) {
+  static async uploadDocument(req: AuthRequest, res: Response): Promise<void> {
     try {
       const { applicationId } = req.params;
       const user = req.user!;
       const file = req.file;
 
       if (!file) {
-        return res.status(400).json({
+        res.status(400).json({
           success: false,
           message: 'Aucun fichier fourni'
         });
+        return;
       }
 
       // Vérifier que l'utilisateur peut uploader des documents pour cette candidature
@@ -27,7 +28,7 @@ export class DocumentController {
         });
 
         if (!company) {
-          return res.status(404).json({
+          res.status(404).json({
             success: false,
             message: 'Entreprise non trouvée'
           });
@@ -41,7 +42,7 @@ export class DocumentController {
         });
 
         if (!application) {
-          return res.status(404).json({
+          res.status(404).json({
             success: false,
             message: 'Candidature non trouvée'
           });
@@ -54,7 +55,7 @@ export class DocumentController {
         });
 
         if (!application) {
-          return res.status(404).json({
+          res.status(404).json({
             success: false,
             message: 'Candidature non trouvée'
           });
@@ -66,7 +67,7 @@ export class DocumentController {
           });
 
           if (!organization || application.program.organizationId !== organization.id) {
-            return res.status(403).json({
+            res.status(403).json({
               success: false,
               message: 'Accès refusé'
             });
@@ -99,7 +100,7 @@ export class DocumentController {
     }
   }
 
-  static async getApplicationDocuments(req: AuthRequest, res: Response) {
+  static async getApplicationDocuments(req: AuthRequest, res: Response): Promise<void> {
     try {
       const { applicationId } = req.params;
       const user = req.user!;
@@ -140,10 +141,11 @@ export class DocumentController {
       }
 
       if (!hasAccess) {
-        return res.status(403).json({
+        res.status(403).json({
           success: false,
           message: 'Accès refusé'
         });
+        return;
       }
 
       const documents = await prisma.document.findMany({
@@ -164,7 +166,7 @@ export class DocumentController {
     }
   }
 
-  static async downloadDocument(req: AuthRequest, res: Response) {
+  static async downloadDocument(req: AuthRequest, res: Response): Promise<void> {
     try {
       const { documentId } = req.params;
       const user = req.user!;
@@ -182,10 +184,11 @@ export class DocumentController {
       });
 
       if (!document) {
-        return res.status(404).json({
+        res.status(404).json({
           success: false,
           message: 'Document non trouvé'
         });
+        return;
       }
 
       // Vérifier l'accès
@@ -206,18 +209,20 @@ export class DocumentController {
       }
 
       if (!hasAccess) {
-        return res.status(403).json({
+        res.status(403).json({
           success: false,
           message: 'Accès refusé'
         });
+        return;
       }
 
       // Vérifier que le fichier existe
       if (!fs.existsSync(document.path)) {
-        return res.status(404).json({
+        res.status(404).json({
           success: false,
           message: 'Fichier non trouvé sur le serveur'
         });
+        return;
       }
 
       // Définir les headers pour le téléchargement
@@ -235,7 +240,7 @@ export class DocumentController {
     }
   }
 
-  static async deleteDocument(req: AuthRequest, res: Response) {
+  static async deleteDocument(req: AuthRequest, res: Response): Promise<void> {
     try {
       const { documentId } = req.params;
       const user = req.user!;
@@ -252,10 +257,11 @@ export class DocumentController {
       });
 
       if (!document) {
-        return res.status(404).json({
+        res.status(404).json({
           success: false,
           message: 'Document non trouvé'
         });
+        return;
       }
 
       // Seule l'entreprise propriétaire peut supprimer ses documents (ou admin/superadmin)
@@ -271,10 +277,11 @@ export class DocumentController {
       }
 
       if (!canDelete) {
-        return res.status(403).json({
+        res.status(403).json({
           success: false,
           message: 'Accès refusé'
         });
+        return;
       }
 
       // Supprimer le fichier physique
@@ -300,7 +307,7 @@ export class DocumentController {
     }
   }
 
-  static async updateDocument(req: AuthRequest, res: Response) {
+  static async updateDocument(req: AuthRequest, res: Response): Promise<void> {
     try {
       const { documentId } = req.params;
       const { description } = req.body;
@@ -318,10 +325,11 @@ export class DocumentController {
       });
 
       if (!document) {
-        return res.status(404).json({
+        res.status(404).json({
           success: false,
           message: 'Document non trouvé'
         });
+        return;
       }
 
       // Vérifier les permissions
@@ -337,10 +345,11 @@ export class DocumentController {
       }
 
       if (!canUpdate) {
-        return res.status(403).json({
+        res.status(403).json({
           success: false,
           message: 'Accès refusé'
         });
+        return;
       }
 
       const updatedDocument = await prisma.document.update({

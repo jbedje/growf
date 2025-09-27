@@ -77,11 +77,19 @@ export class ProgramController {
     }
   }
 
-  static async getPublicProgramById(req: Request, res: Response) {
+  static async getPublicProgramById(req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params;
 
-      const program = await prisma.program.findUnique({
+      if (!id) {
+        res.status(400).json({
+          success: false,
+          message: 'ID du programme requis'
+        });
+        return;
+      }
+
+      const program = await prisma.program.findFirst({
         where: {
           id,
           status: ProgramStatus.PUBLISHED,
@@ -103,10 +111,11 @@ export class ProgramController {
       });
 
       if (!program) {
-        return res.status(404).json({
+        res.status(404).json({
           success: false,
           message: 'Programme non trouvé ou non disponible'
         });
+        return;
       }
 
       res.json({
@@ -123,7 +132,7 @@ export class ProgramController {
   }
 
   // Routes pour les organisations et admins
-  static async getPrograms(req: AuthRequest, res: Response) {
+  static async getPrograms(req: AuthRequest, res: Response): Promise<void> {
     try {
       const { status, sector, search, page = 1, limit = 10 } = req.query;
       const user = req.user!;
@@ -137,11 +146,12 @@ export class ProgramController {
         });
 
         if (!organization) {
-          return res.status(404).json({
+          res.status(404).json({
             success: false,
             message: 'Organisation non trouvée'
           });
-        }
+        return;
+      }
 
         where.organizationId = organization.id;
       }
@@ -206,7 +216,7 @@ export class ProgramController {
     }
   }
 
-  static async createProgram(req: AuthRequest, res: Response) {
+  static async createProgram(req: AuthRequest, res: Response): Promise<void> {
     try {
       const user = req.user!;
       const programData = req.body;
@@ -219,22 +229,24 @@ export class ProgramController {
         });
 
         if (!organization) {
-          return res.status(404).json({
+          res.status(404).json({
             success: false,
             message: 'Organisation non trouvée'
           });
-        }
+        return;
+      }
 
         organizationId = organization.id;
       } else {
         // Pour les admins et superadmins, l'organizationId doit être fourni
         organizationId = programData.organizationId;
         if (!organizationId) {
-          return res.status(400).json({
+          res.status(400).json({
             success: false,
             message: 'ID de l\'organisation requis'
           });
-        }
+        return;
+      }
       }
 
       const program = await prisma.program.create({
@@ -267,7 +279,7 @@ export class ProgramController {
     }
   }
 
-  static async getProgramById(req: AuthRequest, res: Response) {
+  static async getProgramById(req: AuthRequest, res: Response): Promise<void> {
     try {
       const { id } = req.params;
       const user = req.user!;
@@ -281,11 +293,12 @@ export class ProgramController {
         });
 
         if (!organization) {
-          return res.status(404).json({
+          res.status(404).json({
             success: false,
             message: 'Organisation non trouvée'
           });
-        }
+        return;
+      }
 
         where.organizationId = organization.id;
       }
@@ -309,7 +322,7 @@ export class ProgramController {
       });
 
       if (!program) {
-        return res.status(404).json({
+        res.status(404).json({
           success: false,
           message: 'Programme non trouvé'
         });
@@ -328,7 +341,7 @@ export class ProgramController {
     }
   }
 
-  static async updateProgram(req: AuthRequest, res: Response) {
+  static async updateProgram(req: AuthRequest, res: Response): Promise<void> {
     try {
       const { id } = req.params;
       const user = req.user!;
@@ -343,11 +356,12 @@ export class ProgramController {
         });
 
         if (!organization) {
-          return res.status(404).json({
+          res.status(404).json({
             success: false,
             message: 'Organisation non trouvée'
           });
-        }
+        return;
+      }
 
         where.organizationId = organization.id;
       }
@@ -379,7 +393,7 @@ export class ProgramController {
     }
   }
 
-  static async deleteProgram(req: AuthRequest, res: Response) {
+  static async deleteProgram(req: AuthRequest, res: Response): Promise<void> {
     try {
       const { id } = req.params;
       const user = req.user!;
@@ -393,11 +407,12 @@ export class ProgramController {
         });
 
         if (!organization) {
-          return res.status(404).json({
+          res.status(404).json({
             success: false,
             message: 'Organisation non trouvée'
           });
-        }
+        return;
+      }
 
         where.organizationId = organization.id;
       }
@@ -417,7 +432,7 @@ export class ProgramController {
     }
   }
 
-  static async updateProgramStatus(req: AuthRequest, res: Response) {
+  static async updateProgramStatus(req: AuthRequest, res: Response): Promise<void> {
     try {
       const { id } = req.params;
       const { status } = req.body;
@@ -432,11 +447,12 @@ export class ProgramController {
         });
 
         if (!organization) {
-          return res.status(404).json({
+          res.status(404).json({
             success: false,
             message: 'Organisation non trouvée'
           });
-        }
+        return;
+      }
 
         where.organizationId = organization.id;
       }
@@ -468,7 +484,7 @@ export class ProgramController {
     }
   }
 
-  static async duplicateProgram(req: AuthRequest, res: Response) {
+  static async duplicateProgram(req: AuthRequest, res: Response): Promise<void> {
     try {
       const { id } = req.params;
       const user = req.user!;
@@ -482,11 +498,12 @@ export class ProgramController {
         });
 
         if (!organization) {
-          return res.status(404).json({
+          res.status(404).json({
             success: false,
             message: 'Organisation non trouvée'
           });
-        }
+        return;
+      }
 
         where.organizationId = organization.id;
       }
@@ -494,18 +511,27 @@ export class ProgramController {
       const originalProgram = await prisma.program.findUnique({ where });
 
       if (!originalProgram) {
-        return res.status(404).json({
+        res.status(404).json({
           success: false,
           message: 'Programme non trouvé'
         });
       }
 
-      const { id: _, createdAt, updatedAt, ...programData } = originalProgram;
+      const { id: _, createdAt, updatedAt, ...programData } = originalProgram!;
 
       const duplicatedProgram = await prisma.program.create({
         data: {
-          ...programData,
           title: `${programData.title} (Copie)`,
+          description: programData.description,
+          sector: programData.sector,
+          location: programData.location,
+          organizationId: programData.organizationId,
+          amountMin: programData.amountMin,
+          amountMax: programData.amountMax,
+          deadline: programData.deadline,
+          requirements: programData.requirements as any,
+          criteria: programData.criteria as any,
+          applicationForm: programData.applicationForm as any,
           status: ProgramStatus.DRAFT
         },
         include: {
@@ -532,7 +558,7 @@ export class ProgramController {
     }
   }
 
-  static async getProgramStatistics(req: AuthRequest, res: Response) {
+  static async getProgramStatistics(req: AuthRequest, res: Response): Promise<void> {
     try {
       const { id } = req.params;
       const user = req.user!;
@@ -546,11 +572,12 @@ export class ProgramController {
         });
 
         if (!organization) {
-          return res.status(404).json({
+          res.status(404).json({
             success: false,
             message: 'Organisation non trouvée'
           });
-        }
+        return;
+      }
 
         where.organizationId = organization.id;
       }
@@ -567,10 +594,18 @@ export class ProgramController {
       });
 
       if (!program) {
-        return res.status(404).json({
+        res.status(404).json({
           success: false,
           message: 'Programme non trouvé'
         });
+      }
+
+      if (!id) {
+        res.status(400).json({
+          success: false,
+          message: 'ID du programme requis'
+        });
+        return;
       }
 
       // Statistiques des candidatures
@@ -581,9 +616,9 @@ export class ProgramController {
       });
 
       const stats = {
-        totalApplications: program._count.applications,
+        totalApplications: program!._count?.applications || 0,
         applicationsByStatus: applicationStats.reduce((acc, stat) => {
-          acc[stat.status] = stat._count;
+          acc[stat.status] = stat._count || 0;
           return acc;
         }, {} as Record<string, number>)
       };

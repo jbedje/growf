@@ -76,7 +76,12 @@ export interface Organization {
   website?: string;
   phone?: string;
   address?: string;
-  contactInfo?: any;
+  contactInfo?: {
+    email?: string;
+    phone?: string;
+    address?: string;
+    [key: string]: unknown;
+  };
   createdAt: string;
   updatedAt: string;
 }
@@ -86,7 +91,12 @@ export interface Program {
   organizationId: string;
   title: string;
   description: string;
-  criteria: any;
+  criteria: {
+    description?: string;
+    requirements?: string[];
+    eligibility?: string[];
+    [key: string]: unknown;
+  };
   amountMin?: number;
   amountMax?: number;
   deadline?: string;
@@ -95,8 +105,21 @@ export interface Program {
   companySize: CompanySize[];
   location: string[];
   tags: string[];
-  requirements?: any;
-  applicationForm?: any;
+  requirements?: {
+    documents?: string[];
+    conditions?: string[];
+    [key: string]: unknown;
+  };
+  applicationForm?: {
+    fields?: Array<{
+      name: string;
+      type: string;
+      label: string;
+      required?: boolean;
+      options?: string[];
+    }>;
+    [key: string]: unknown;
+  };
   createdAt: string;
   updatedAt: string;
   organization?: Organization;
@@ -110,7 +133,11 @@ export interface Application {
   programId: string;
   companyId: string;
   status: ApplicationStatus;
-  data: any;
+  data: {
+    answers?: Record<string, unknown>;
+    documents?: string[];
+    [key: string]: unknown;
+  };
   score?: number;
   submittedAt?: string;
   reviewedAt?: string;
@@ -149,12 +176,16 @@ export interface Notification {
   type: string;
   title: string;
   message: string;
-  data?: any;
+  data?: {
+    applicationId?: string;
+    programId?: string;
+    [key: string]: unknown;
+  };
   readAt?: string;
   createdAt: string;
 }
 
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
   success: boolean;
   data?: T;
   message?: string;
@@ -191,6 +222,7 @@ export interface ProgramFilters {
   amountMax?: number;
   search?: string;
   tags?: string[];
+  [key: string]: unknown;
 }
 
 export interface PaginationParams {
@@ -221,13 +253,23 @@ export interface CreateOrganizationProfileRequest {
   website?: string;
   phone?: string;
   address?: string;
-  contactInfo?: any;
+  contactInfo?: {
+    email?: string;
+    phone?: string;
+    address?: string;
+    [key: string]: unknown;
+  };
 }
 
 export interface CreateProgramRequest {
   title: string;
   description: string;
-  criteria: any;
+  criteria: {
+    description?: string;
+    requirements?: string[];
+    eligibility?: string[];
+    [key: string]: unknown;
+  };
   amountMin?: number;
   amountMax?: number;
   deadline?: string;
@@ -235,11 +277,28 @@ export interface CreateProgramRequest {
   companySize: CompanySize[];
   location: string[];
   tags: string[];
-  requirements?: any;
-  applicationForm?: any;
+  requirements?: {
+    documents?: string[];
+    conditions?: string[];
+    [key: string]: unknown;
+  };
+  applicationForm?: {
+    fields?: Array<{
+      name: string;
+      type: string;
+      label: string;
+      required?: boolean;
+      options?: string[];
+    }>;
+    [key: string]: unknown;
+  };
 }
 
 export interface CreateApplicationRequest {
   programId: string;
-  data: any;
+  data: {
+    answers?: Record<string, unknown>;
+    documents?: string[];
+    [key: string]: unknown;
+  };
 }
