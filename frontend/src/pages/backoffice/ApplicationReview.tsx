@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   ArrowLeft,
@@ -45,9 +45,9 @@ const ApplicationReview: React.FC = () => {
       loadApplication();
       loadDocuments();
     }
-  }, [id]);
+  }, [id, loadApplication, loadDocuments]);
 
-  const loadApplication = async () => {
+  const loadApplication = useCallback(async () => {
     try {
       setLoading(true);
       const response = await ApplicationService.getApplicationById(id!);
@@ -65,9 +65,9 @@ const ApplicationReview: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id, navigate]);
 
-  const loadDocuments = async () => {
+  const loadDocuments = useCallback(async () => {
     try {
       setDocumentsLoading(true);
       const response = await DocumentService.getApplicationDocuments(id!);
@@ -79,7 +79,7 @@ const ApplicationReview: React.FC = () => {
     } finally {
       setDocumentsLoading(false);
     }
-  };
+  }, [id]);
 
   const handleFileUpload = async (file: File, description?: string) => {
     try {

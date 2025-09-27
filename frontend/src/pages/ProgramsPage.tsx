@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../components/ui/Button';
 import { Spinner } from '../components/ui/Spinner';
@@ -33,7 +33,7 @@ export const ProgramsPage: React.FC = () => {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
   // Load programs from API
-  const loadPrograms = async () => {
+  const loadPrograms = useCallback(async () => {
     try {
       setLoading(true);
       const apiFilters = {
@@ -53,11 +53,11 @@ export const ProgramsPage: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [pagination.page, pagination.limit, filters.search, filters.sector, filters.location]);
 
   useEffect(() => {
     loadPrograms();
-  }, [pagination.page, filters.search, filters.sector, filters.location]);
+  }, [loadPrograms]);
 
   // Helper functions
   const formatAmount = (min?: number, max?: number) => {

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuthStore } from '../../store/authStore';
 import { UserRole } from '../../types';
 import { Button } from '../../components/ui/Button';
@@ -47,7 +47,7 @@ export const OrganizationManagement: React.FC = () => {
   });
 
   // Load organizations from API
-  const loadOrganizations = async () => {
+  const loadOrganizations = useCallback(async () => {
     try {
       setLoading(true);
       const filters = {
@@ -66,13 +66,13 @@ export const OrganizationManagement: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [pagination.page, pagination.limit, selectedType, searchTerm]);
 
   useEffect(() => {
     if (user?.role === UserRole.SUPERADMIN || user?.role === UserRole.ADMIN) {
       loadOrganizations();
     }
-  }, [pagination.page, selectedType, searchTerm, user]);
+  }, [user, loadOrganizations]);
 
   // Helper functions
   const resetForm = () => {

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 // import { useAuthStore } from '../../store/authStore';
 import { Button } from '../../components/ui/Button';
 import { Spinner } from '../../components/ui/Spinner';
@@ -81,7 +81,7 @@ export const ProgramManagement: React.FC = () => {
   });
 
   // Load programs from API
-  const loadPrograms = async () => {
+  const loadPrograms = useCallback(async () => {
     try {
       setLoading(true);
       const filters = {
@@ -101,11 +101,11 @@ export const ProgramManagement: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [pagination.page, pagination.limit, selectedStatus, selectedSector, searchTerm]);
 
   useEffect(() => {
     loadPrograms();
-  }, [pagination.page, selectedStatus, selectedSector, searchTerm]);
+  }, [loadPrograms]);
 
   // Helper functions
   const resetForm = () => {

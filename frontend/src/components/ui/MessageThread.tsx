@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Send, User, Clock, Check, CheckCheck, Trash2 } from 'lucide-react';
 import { MessageService } from '../../services/messageService';
 import type { Message } from '../../services/messageService';
@@ -38,7 +38,7 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
         clearInterval(intervalRef.current);
       }
     };
-  }, [applicationId, autoRefresh, refreshInterval]);
+  }, [loadMessages, autoRefresh, refreshInterval]);
 
   useEffect(() => {
     scrollToBottom();
@@ -48,7 +48,7 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  const loadMessages = async () => {
+  const loadMessages = useCallback(async () => {
     try {
       const response = await MessageService.getApplicationMessages(applicationId);
       if (response.success) {
@@ -61,7 +61,7 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
     } finally {
       setLoading(false);
     }
-  };
+  }, [applicationId]);
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();

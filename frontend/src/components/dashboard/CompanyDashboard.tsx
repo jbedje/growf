@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
 import { Button } from '../ui/Button';
@@ -134,7 +134,7 @@ export const CompanyDashboard: React.FC = () => {
   const [settings, setSettings] = useState<CompanySettings | null>(null);
   const [activeSettingsTab, setActiveSettingsTab] = useState<'general' | 'notifications' | 'dashboard' | 'privacy' | 'security'>('general');
 
-  const fetchDashboardData = async () => {
+  const fetchDashboardData = useCallback(async () => {
     try {
       setLoading(true);
 
@@ -334,7 +334,7 @@ export const CompanyDashboard: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [selectedTimeRange]);
 
   // Refresh functionality
   const refreshDashboard = async () => {
@@ -414,7 +414,7 @@ export const CompanyDashboard: React.FC = () => {
   const unreadCount = notifications.filter(n => !n.read).length;
 
   // Settings management
-  const fetchSettings = async () => {
+  const fetchSettings = useCallback(async () => {
     try {
       const response = await apiService.getCompanySettings();
       if (response.success) {
@@ -427,9 +427,9 @@ export const CompanyDashboard: React.FC = () => {
       console.log('Settings API unavailable, using defaults');
       setDefaultSettings();
     }
-  };
+  }, [user, setDefaultSettings]);
 
-  const setDefaultSettings = () => {
+  const setDefaultSettings = useCallback(() => {
     const defaultSettings: CompanySettings = {
       general: {
         companyName: user?.email?.split('@')[0] || 'Mon Entreprise',
@@ -468,7 +468,7 @@ export const CompanyDashboard: React.FC = () => {
       }
     };
     setSettings(defaultSettings);
-  };
+  }, [user]);
 
   const updateSettings = async (section: keyof CompanySettings, sectionSettings: any) => {
     if (!settings) return;
@@ -570,17 +570,17 @@ export const CompanyDashboard: React.FC = () => {
     }, 30000);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [fetchDashboardData]);
 
   useEffect(() => {
     fetchDashboardData();
     fetchSettings();
-  }, [selectedTimeRange]);
+  }, [fetchDashboardData, fetchSettings]);
 
   // Load settings on component mount
   useEffect(() => {
     fetchSettings();
-  }, []);
+  }, [fetchSettings]);
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('fr-FR', {

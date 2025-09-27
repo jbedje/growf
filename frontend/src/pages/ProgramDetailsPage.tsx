@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '../components/ui/Button';
 import { Modal } from '../components/ui/Modal';
@@ -396,7 +396,7 @@ export const ProgramDetailsPage: React.FC = () => {
     }
   };
 
-  const fetchProgramDetails = async () => {
+  const fetchProgramDetails = useCallback(async () => {
     try {
       setLoading(true);
       await new Promise(resolve => setTimeout(resolve, 800));
@@ -417,11 +417,11 @@ export const ProgramDetailsPage: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id, mockPrograms, mockUserApplications]);
 
   useEffect(() => {
     fetchProgramDetails();
-  }, [id]);
+  }, [fetchProgramDetails]);
 
   const getStatusBadge = (status: ProgramDetails['status']) => {
     const statusConfig = {

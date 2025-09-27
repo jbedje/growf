@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Eye,
@@ -37,9 +37,9 @@ export const ApplicationManagement: React.FC = () => {
 
   useEffect(() => {
     loadApplications();
-  }, [filters]);
+  }, [loadApplications]);
 
-  const loadApplications = async () => {
+  const loadApplications = useCallback(async () => {
     try {
       setLoading(true);
       const response = await ApplicationService.getAllApplications(filters);
@@ -55,7 +55,7 @@ export const ApplicationManagement: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [filters]);
 
   const handleFilterChange = (newFilters: Partial<ApplicationFilters>) => {
     setFilters(prev => ({

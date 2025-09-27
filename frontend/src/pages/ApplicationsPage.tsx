@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../components/ui/Button';
 import { Modal } from '../components/ui/Modal';
@@ -46,7 +46,7 @@ export const ApplicationsPage: React.FC = () => {
   });
 
 
-  const loadApplications = async () => {
+  const loadApplications = useCallback(async () => {
     try {
       setLoading(true);
       const response = await ApplicationService.getMyApplications(filters);
@@ -72,11 +72,11 @@ export const ApplicationsPage: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [filters]);
 
   useEffect(() => {
     loadApplications();
-  }, [filters]);
+  }, [loadApplications]);
 
   const handleFilterChange = (newFilters: Partial<ApplicationFilters>) => {
     const updatedFilters = { ...filters, ...newFilters, page: 1 };
