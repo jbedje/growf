@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, CheckCircle, Users, TrendingUp, Shield, Zap } from 'lucide-react';
-import cipmeLogoJpg from '../assets/images/cipme-logo.jpg';
+import cipmeLogoPng from '../assets/images/logo-ci-pme.png';
 
 export const LandingPage: React.FC = () => {
   return (
@@ -13,9 +13,9 @@ export const LandingPage: React.FC = () => {
             <div className="flex items-center space-x-4">
               <div className="flex-shrink-0">
                 <img
-                  src={cipmeLogoJpg}
+                  src={cipmeLogoPng}
                   alt="Côte d'Ivoire PME"
-                  className="h-12 w-auto object-contain"
+                  className="h-10 w-auto object-contain"
                 />
               </div>
               <div className="hidden md:block">
@@ -298,7 +298,7 @@ export const LandingPage: React.FC = () => {
             <div>
               <div className="flex items-center space-x-3 mb-4">
                 <img
-                  src={cipmeLogoJpg}
+                  src={cipmeLogoPng}
                   alt="Côte d'Ivoire PME"
                   className="h-8 w-auto object-contain filter brightness-0 invert"
                 />
