@@ -34,7 +34,8 @@
       "Bash(cmd /c:*)",
       "Bash(PORT=3005 npm run dev:backend)",
       "Bash(git commit:*)",
-      "Bash(docker build:*)"
+      "Bash(docker build:*)",
+      "Bash(nslookup:*)"
     ],
     "deny": [],
     "ask": []

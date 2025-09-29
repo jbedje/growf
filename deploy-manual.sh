@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# GROWF Production Deployment Script
+# GROWF Manual Deployment Script (without GitHub dependency)
 # For Contabo VM (Ubuntu) - growf2.cipme.ci
 
 set -e
 
-echo "🚀 Starting GROWF Production Deployment..."
+echo "🚀 Starting GROWF Manual Deployment..."
 
 # Colors for output
 RED='\033[0;31m'
@@ -14,13 +14,6 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-# Configuration
-DOMAIN="lab.cipme.ci"
-EMAIL="admin@cipme.ci"
-PROJECT_DIR="/opt/growf"
-BACKUP_DIR="/opt/growf-backups"
-
-# Function to print colored output
 print_status() {
     echo -e "${BLUE}[INFO]${NC} $1"
 }
@@ -43,11 +36,34 @@ if [[ $EUID -ne 0 ]]; then
    exit 1
 fi
 
+# Configuration
+DOMAIN="growf2.cipme.ci"
+EMAIL="admin@cipme.ci"
+PROJECT_DIR="/opt/growf"
+BACKUP_DIR="/opt/growf-backups"
+
+print_status "This script will deploy GROWF without requiring GitHub access"
+print_warning "Make sure you have uploaded all the project files to $PROJECT_DIR first!"
+
+read -p "Have you uploaded the project files to $PROJECT_DIR? (y/N): " confirm
+if [[ ! $confirm =~ ^[Yy]$ ]]; then
+    print_error "Please upload the project files first, then run this script again"
+    exit 1
+fi
+
+if [ ! -f "$PROJECT_DIR/docker-compose.prod.yml" ]; then
+    print_error "docker-compose.prod.yml not found in $PROJECT_DIR"
+    print_error "Please ensure all project files are uploaded to $PROJECT_DIR"
+    exit 1
+fi
+
+cd $PROJECT_DIR
+
 print_status "Updating system packages..."
 apt update && apt upgrade -y
 
 print_status "Installing required packages..."
-apt install -y curl wget git nginx certbot python3-certbot-nginx ufw fail2ban
+apt install -y curl wget nginx certbot python3-certbot-nginx ufw fail2ban
 
 # Install Docker if not present
 if ! command -v docker &> /dev/null; then
@@ -102,33 +118,27 @@ EOF
 systemctl enable fail2ban
 systemctl restart fail2ban
 
-# Create project directory
-print_status "Setting up project directory..."
-mkdir -p $PROJECT_DIR
+# Create necessary directories
+print_status "Setting up directories..."
 mkdir -p $BACKUP_DIR
 mkdir -p /var/log/growf
+mkdir -p uploads
+mkdir -p logs
 
-# Clone or update repository
-if [ ! -d "$PROJECT_DIR/.git" ]; then
-    print_status "Cloning GROWF repository..."
-    git clone https://github.com/JeremieBEDJE/growf.git $PROJECT_DIR
-else
-    print_status "Updating GROWF repository..."
-    cd $PROJECT_DIR
-    git pull origin main
-fi
-
-cd $PROJECT_DIR
-
-# Copy production environment file
+# Copy production environment file if not exists
 if [ ! -f ".env" ]; then
-    print_status "Setting up environment configuration..."
-    cp .env.prod .env
-    print_warning "Please edit .env file with your production values:"
-    print_warning "- Database passwords"
-    print_warning "- JWT secrets"
-    print_warning "- Other sensitive data"
-    read -p "Press enter when you've configured the .env file..."
+    if [ -f ".env.prod" ]; then
+        print_status "Setting up environment configuration..."
+        cp .env.prod .env
+        print_warning "Please edit .env file with your production values:"
+        print_warning "- Database passwords"
+        print_warning "- JWT secrets"
+        print_warning "- Other sensitive data"
+        read -p "Press enter when you've configured the .env file..."
+    else
+        print_error ".env.prod file not found! Please ensure it's uploaded."
+        exit 1
+    fi
 fi
 
 # Generate SSL certificate with Certbot
@@ -151,7 +161,6 @@ cat > /opt/backup-growf.sh << 'EOF'
 BACKUP_DIR="/opt/growf-backups"
 DATE=$(date +%Y%m%d_%H%M%S)
 
-# Create backup directory
 mkdir -p $BACKUP_DIR/$DATE
 
 # Backup database
@@ -174,23 +183,6 @@ chmod +x /opt/backup-growf.sh
 # Setup cron for automatic backups
 print_status "Setting up automatic backups..."
 (crontab -l 2>/dev/null; echo "0 2 * * * /opt/backup-growf.sh") | crontab -
-
-# Setup log rotation
-print_status "Configuring log rotation..."
-cat > /etc/logrotate.d/growf << 'EOF'
-/var/log/growf/*.log {
-    daily
-    missingok
-    rotate 30
-    compress
-    delaycompress
-    notifempty
-    create 644 www-data www-data
-    postrotate
-        docker-compose -f /opt/growf/docker-compose.prod.yml restart backend frontend || true
-    endscript
-}
-EOF
 
 # Create systemd service for auto-start
 print_status "Setting up systemd service..."
@@ -247,13 +239,11 @@ fi
 
 print_status "Deployment completed!"
 print_warning "Important reminders:"
-print_warning "1. Update your .env file with secure passwords"
-print_warning "2. Create your superadmin account:"
+print_warning "1. Create your superadmin account:"
 print_warning "   docker-compose -f $PROJECT_DIR/docker-compose.prod.yml exec backend npm run create:superadmin"
-print_warning "3. Monitor logs regularly:"
+print_warning "2. Monitor logs regularly:"
 print_warning "   docker-compose -f $PROJECT_DIR/docker-compose.prod.yml logs -f"
-print_warning "4. SSL certificate will auto-renew, but monitor for issues"
 
 echo ""
-print_success "🎉 GROWF Production Deployment Complete!"
+print_success "🎉 GROWF Manual Deployment Complete!"
 echo ""
