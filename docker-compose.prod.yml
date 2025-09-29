@@ -57,7 +57,7 @@ services:
       RATE_LIMIT_MAX_REQUESTS: ${RATE_LIMIT_MAX_REQUESTS:-100}
       SMTP_HOST: mail.smtp2go.com
       SMTP_PORT: 587
-      SMTP_SECURE: false
+      SMTP_SECURE: "false"
       SMTP_USER: growf@cipme.ci
       SMTP_PASS: ${SMTP_PASSWORD}
       EMAIL_FROM: growf@cipme.ci
