@@ -13,6 +13,14 @@ export class DocumentController {
       const user = req.user!;
       const file = req.file;
 
+      if (!applicationId) {
+        res.status(400).json({
+          success: false,
+          message: 'ID de candidature requis'
+        });
+        return;
+      }
+
       if (!file) {
         res.status(400).json({
           success: false,
@@ -32,6 +40,7 @@ export class DocumentController {
             success: false,
             message: 'Entreprise non trouvée'
           });
+          return;
         }
 
         const application = await prisma.application.findUnique({
@@ -46,6 +55,7 @@ export class DocumentController {
             success: false,
             message: 'Candidature non trouvée'
           });
+          return;
         }
       } else {
         // Pour les organisations et admins, vérifier l'accès
@@ -59,6 +69,7 @@ export class DocumentController {
             success: false,
             message: 'Candidature non trouvée'
           });
+          return;
         }
 
         if (user.role === UserRole.ORGANIZATION) {
@@ -66,11 +77,12 @@ export class DocumentController {
             where: { userId: user.id }
           });
 
-          if (!organization || application.program.organizationId !== organization.id) {
+          if (!organization || !application.program || application.program.organizationId !== organization.id) {
             res.status(403).json({
               success: false,
               message: 'Accès refusé'
             });
+            return;
           }
         }
       }
