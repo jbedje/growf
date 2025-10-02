@@ -35,7 +35,11 @@
       "Bash(PORT=3005 npm run dev:backend)",
       "Bash(git commit:*)",
       "Bash(docker build:*)",
-      "Bash(nslookup:*)"
+      "Bash(nslookup:*)",
+      "Bash(sudo -u postgres psql:*)",
+      "Bash(npx prisma generate:*)",
+      "Bash(npx prisma:*)",
+      "Bash(TASKKILL /F /PID 24908)"
     ],
     "deny": [],
     "ask": []
