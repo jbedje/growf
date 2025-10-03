@@ -4,7 +4,6 @@ import {
   ArrowRight,
   CheckCircle,
   Users,
-  TrendingUp,
   Shield,
   Zap,
   Star,
