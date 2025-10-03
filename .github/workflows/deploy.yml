@@ -29,7 +29,7 @@ jobs:
       run: |
         cd frontend
         echo "VITE_API_URL=https://lab.cipme.ci/api" > .env
-        npm run build
+        npx vite build
 
     - name: Deploy to server
       uses: appleboy/ssh-action@v1.0.3
