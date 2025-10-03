@@ -12,6 +12,7 @@ import { BackofficeLayout } from './components/common/BackofficeLayout';
 // Public Pages
 import { HomePage } from './pages/HomePage';
 import { LandingPage } from './pages/LandingPage';
+import { LandingPageNew } from './pages/LandingPageNew';
 import { LoginPage } from './pages/auth/LoginPage';
 import { RegisterPage } from './pages/auth/RegisterPage';
 import { VerifyEmailPage } from './pages/auth/VerifyEmailPage';
@@ -72,6 +73,7 @@ function App() {
           <Routes>
             {/* Routes publiques du frontoffice */}
             <Route path="/" element={<LandingPage />} />
+            <Route path="/new" element={<LandingPageNew />} />
             <Route path="/home" element={<PublicLayout><HomePage /></PublicLayout>} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
